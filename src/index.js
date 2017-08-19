@@ -21,25 +21,34 @@ class Board extends React.Component {
         );
     }
 
-    render() {
+    renderRow(y, sideLength) {
+        let squares = [];
+        const start = y * sideLength,
+            end = start + sideLength;
+        
+        for (let i = start; i < end; i++) {
+            squares.push(this.renderSquare(i));
+        }
+
         return (
-            <div>
-                <div className="board-row">
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                </div>
+            <div className="board-row">
+                {squares}
             </div>
+        );
+    }
+
+    render() {
+        const squares = 9,
+            sideLength = Math.sqrt(squares);
+
+        let board = [];
+
+        for (let y = 0; y < sideLength; y++) {
+            board.push(this.renderRow(y, sideLength));
+        }
+
+        return (
+            <div>{board}</div>
         );
     }
 }
@@ -69,7 +78,7 @@ class Game extends React.Component {
         }
         squares[i] = player;
         this.setState({
-            history: history.concat([{squares: squares, square: i, player: player}]),
+            history: history.concat([{ squares: squares, square: i, player: player }]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext
         });
@@ -92,13 +101,13 @@ class Game extends React.Component {
             const desc = move ?
                 `Move # ${move}: ${step.player} in square ${JSON.stringify(calcCellCoordinates(step.square))}` :
                 'Game start',
-                selected = move == stepNumber ? 'selected-move' : '';
+                selected = move === stepNumber ? 'selected-move' : '';
 
-                return (
-                    <li key={move}>
-                        <a href="#" onClick={() => this.jumpTo(move)} className={selected} >{desc}</a>
-                    </li>
-                );
+            return (
+                <li key={move}>
+                    <a href="#" onClick={() => this.jumpTo(move)} className={selected} >{desc}</a>
+                </li>
+            );
         });
 
         let status;
@@ -157,6 +166,6 @@ function calcCellCoordinates(cell) {
     cell++;
     return {
         x: cell % 3 || 3,
-        y: Math.ceil(cell/3)
+        y: Math.ceil(cell / 3)
     };
 }
