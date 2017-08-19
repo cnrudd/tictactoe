@@ -49,7 +49,9 @@ class Game extends React.Component {
         super();
         this.state = {
             history: [{
-                squares: Array(9).fill(null)
+                squares: Array(9).fill(null),
+                square: null,
+                player: null
             }],
             stepNumber: 0,
             xIsNext: true
@@ -59,14 +61,15 @@ class Game extends React.Component {
     handleClick(i) {
         const history = this.state.history.slice(0, this.state.stepNumber + 1),
             current = history[history.length - 1],
-            squares = current.squares.slice();
+            squares = current.squares.slice(),
+            player = this.state.xIsNext ? 'X' : '0';
 
         if (calculateWinner(squares) || squares[i]) {
             return;
         }
-        squares[i] = this.state.xIsNext ? 'X' : '0';
+        squares[i] = player;
         this.setState({
-            history: history.concat([{squares: squares}]),
+            history: history.concat([{squares: squares, square: i, player: player}]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext
         });
@@ -86,7 +89,7 @@ class Game extends React.Component {
 
         const moves = history.map((step, move) => {
             const desc = move ?
-                'Move #' + move :
+                `Move # ${move}: ${step.player} in square ${JSON.stringify(calcCellCoordinates(step.square))}` :
                 'Game start';
                 return (
                     <li key={move}>
@@ -145,4 +148,12 @@ function calculateWinner(squares) {
         }
     }
     return null;
+}
+
+function calcCellCoordinates(cell) {
+    cell++;
+    return {
+        x: cell % 3 || 3,
+        y: Math.ceil(cell/3)
+    };
 }
