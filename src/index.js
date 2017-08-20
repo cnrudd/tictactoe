@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { SegmentedControl } from 'segmented-control';
+import { Utils } from './Utils.js';
 import { Board } from './Board.js';
 import './index.css';
 
@@ -25,10 +26,16 @@ class Game extends React.Component {
             squares = current.squares.slice(),
             player = this.state.xIsNext ? 'X' : '0';
 
-        if (calculateWinner(squares) || squares[i]) {
+        if (Utils.calculateWinner(squares) || (squares[i] && squares[i].val)) {
             return;
         }
-        squares[i] = player;
+        squares[i] = { val: player, cls: '' };
+        
+        const winner = Utils.calculateWinner(squares);
+        if (winner) {
+            winner.squares.forEach(it => it.cls = 'winner');
+        }
+
         this.setState({
             history: history.concat([{ squares: squares, square: i, player: player }]),
             stepNumber: history.length,
@@ -56,7 +63,7 @@ class Game extends React.Component {
                 (Math.abs(move - history.length)) - 1 :
                 move;
 
-            const coord = JSON.stringify(calcCellCoordinates(step.square)),
+            const coord = JSON.stringify(Utils.calcCellCoordinates(step.square)),
                 desc = move ?
                     `Move # ${move}: ${step.player} in square ${coord}` :
                     'Game start',
@@ -78,12 +85,12 @@ class Game extends React.Component {
         const history = this.state.history,
             stepNumber = this.state.stepNumber,
             current = history[stepNumber],
-            winner = calculateWinner(current.squares),
+            winner = Utils.calculateWinner(current.squares),
             moves = this.listMoves();
 
         let status;
         if (winner) {
-            status = 'Winner: ' + winner;
+            status = 'Winner: ' + winner.val;
         } else {
             status = 'Next player: ' + (this.state.xIsNext ? 'X' : '0');
         }
@@ -105,7 +112,7 @@ class Game extends React.Component {
                             { label: "DESC", value: "DESC" }
                         ]}
                         setValue={newValue => this.changeMovesSort(newValue)}
-                        style={{ width: 130, color: '#47bc9d', fontSize: '12px' }} // purple400
+                        style={{ width: 130, color: '#47bc9d', fontSize: '12px' }}
                     /></div>
                     <ul >{moves}</ul>
                 </div>
@@ -120,32 +127,3 @@ ReactDOM.render(
     <Game />,
     document.getElementById('root')
 );
-
-
-function calculateWinner(squares) {
-    const lines = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-        const [a, b, c] = lines[i];
-        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-            return squares[a];
-        }
-    }
-    return null;
-}
-
-function calcCellCoordinates(cell) {
-    cell++;
-    return {
-        x: cell % 3 || 3,
-        y: Math.ceil(cell / 3)
-    };
-}

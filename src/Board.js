@@ -4,10 +4,15 @@ import { Square } from './Square.js';
 export class Board extends React.Component {
 
     renderSquare(i) {
+        const sq = this.props.squares[i],
+            val = sq ? sq.val : null,
+            cls = sq ? sq.cls : null;
+
         return (
             <Square
-                value={this.props.squares[i]}
+                value={val}
                 onClick={() => this.props.onClick(i)}
+                cls={cls}
             />
         );
     }
