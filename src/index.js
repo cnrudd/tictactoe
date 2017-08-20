@@ -1,57 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { SegmentedControl } from 'segmented-control';
+import { Board } from './Board.js';
 import './index.css';
-
-function Square(props) {
-    return (
-        <button className="square" onClick={props.onClick}>
-            {props.value}
-        </button>
-    );
-}
-
-class Board extends React.Component {
-
-    renderSquare(i) {
-        return (
-            <Square
-                value={this.props.squares[i]}
-                onClick={() => this.props.onClick(i)}
-            />
-        );
-    }
-
-    renderRow(y, sideLength) {
-        let squares = [];
-        const start = y * sideLength,
-            end = start + sideLength;
-        
-        for (let i = start; i < end; i++) {
-            squares.push(this.renderSquare(i));
-        }
-
-        return (
-            <div className="board-row">
-                {squares}
-            </div>
-        );
-    }
-
-    render() {
-        const squares = 9,
-            sideLength = Math.sqrt(squares);
-
-        let board = [];
-
-        for (let y = 0; y < sideLength; y++) {
-            board.push(this.renderRow(y, sideLength));
-        }
-
-        return (
-            <div>{board}</div>
-        );
-    }
-}
 
 class Game extends React.Component {
     constructor() {
@@ -62,6 +13,7 @@ class Game extends React.Component {
                 square: null,
                 player: null
             }],
+            order: 'ASC',
             stepNumber: 0,
             xIsNext: true
         }
@@ -80,7 +32,8 @@ class Game extends React.Component {
         this.setState({
             history: history.concat([{ squares: squares, square: i, player: player }]),
             stepNumber: history.length,
-            xIsNext: !this.state.xIsNext
+            xIsNext: !this.state.xIsNext,
+            moves: []
         });
     }
 
@@ -91,16 +44,22 @@ class Game extends React.Component {
         })
     }
 
-    render() {
-        const history = this.state.history,
+    listMoves() {
+        const history = this.state.history.slice(),
             stepNumber = this.state.stepNumber,
-            current = history[stepNumber],
-            winner = calculateWinner(current.squares);
+            order = this.state.order;
 
-        const moves = history.map((step, move) => {
-            const desc = move ?
-                `Move # ${move}: ${step.player} in square ${JSON.stringify(calcCellCoordinates(step.square))}` :
-                'Game start',
+        if (order == 'DESC') history.reverse();
+
+        return history.map((step, move) => {
+            move = (order == 'DESC') ?
+                (Math.abs(move - history.length)) - 1 :
+                move;
+
+            const coord = JSON.stringify(calcCellCoordinates(step.square)),
+                desc = move ?
+                    `Move # ${move}: ${step.player} in square ${coord}` :
+                    'Game start',
                 selected = move === stepNumber ? 'selected-move' : '';
 
             return (
@@ -109,6 +68,18 @@ class Game extends React.Component {
                 </li>
             );
         });
+    }
+
+    changeMovesSort(order) {
+        this.setState({ order: order });
+    }
+
+    render() {
+        const history = this.state.history,
+            stepNumber = this.state.stepNumber,
+            current = history[stepNumber],
+            winner = calculateWinner(current.squares),
+            moves = this.listMoves();
 
         let status;
         if (winner) {
@@ -127,7 +98,16 @@ class Game extends React.Component {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{moves}</ol>
+                    <div><SegmentedControl
+                        name="oneDisabled"
+                        options={[
+                            { label: "ASC", value: "ASC", default: true },
+                            { label: "DESC", value: "DESC" }
+                        ]}
+                        setValue={newValue => this.changeMovesSort(newValue)}
+                        style={{ width: 130, color: '#47bc9d', fontSize: '12px' }} // purple400
+                    /></div>
+                    <ul >{moves}</ul>
                 </div>
             </div>
         );
