@@ -7,7 +7,7 @@
 /coverage
 
 # production
-/build
+#/build
 
 # misc
 .DS_Store
@@ -23,5 +23,6 @@ yarn-error.log*
 # editors
 .settings
 .vscode
+.history
 typings
 jsconfig.json
